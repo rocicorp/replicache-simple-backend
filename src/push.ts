@@ -36,12 +36,12 @@ export async function push(
   req: Request,
   mutators: MutatorDefs
 ) {
-  lc.addContext("req", nanoid()).addContext("spaceID", "spaceID");
+  lc = lc.addContext("req", nanoid()).addContext("spaceID", "spaceID");
   lc.debug?.("Processing push", req.body);
 
   try {
     const push = pushRequestSchema.parse(req.body);
-    lc.addContext("clientID", push.clientID);
+    lc = lc.addContext("clientID", push.clientID);
     lc.debug?.("Got clientID");
 
     const t0 = Date.now();
@@ -81,7 +81,7 @@ export async function push(
         lc.debug?.("Processing mutation:", JSON.stringify(mutation, null, ""));
 
         const t1 = Date.now();
-        const mutator = (mutators as any)[mutation.name];
+        const mutator = mutators[mutation.name];
         if (!mutator) {
           lc.error?.(`Unknown mutator: ${mutation.name} - skipping`);
         }

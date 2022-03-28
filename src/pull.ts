@@ -21,14 +21,14 @@ export type Request = {
 };
 
 export async function pull(lc: LogContext, req: Request): Promise<string> {
-  lc.addContext("req", nanoid()).addContext("spaceID", req.spaceID);
+  lc = lc.addContext("req", nanoid()).addContext("spaceID", req.spaceID);
   lc.debug?.(`Processing pull: ${req}`);
   try {
-    const spaceID = req.spaceID;
+    const { spaceID } = req;
     const pull = pullRequest.parse(req.body);
-    let requestCookie = pull.cookie;
+    const requestCookie = pull.cookie;
 
-    lc.addContext("clientID", pull.clientID);
+    lc = lc.addContext("clientID", pull.clientID);
     lc.debug?.("Got clientID");
 
     const t0 = Date.now();
@@ -57,7 +57,7 @@ export async function pull(lc: LogContext, req: Request): Promise<string> {
       patch: [],
     };
 
-    for (let [key, value, deleted] of entries) {
+    for (const [key, value, deleted] of entries) {
       if (deleted) {
         resp.patch.push({
           op: "del",
