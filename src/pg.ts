@@ -1,6 +1,10 @@
 // Low-level config and utilities for Postgres.
 
-import { Pool, QueryResult } from "pg";
+import type { LogContext } from "@rocicorp/logger";
+import pg from "pg";
+import type { QueryResult } from "pg";
+
+const { Pool } = pg;
 
 const pool = new Pool(
   process.env.DATABASE_URL
@@ -57,13 +61,14 @@ export type TransactionBodyFn<R> = (executor: Executor) => Promise<R>;
  * @param body Function to invoke. If this throws, the transaction will be rolled
  * back. The thrown error will be re-thrown.
  */
-export async function transact<R>(body: TransactionBodyFn<R>) {
+export async function transact<R>(lc: LogContext, body: TransactionBodyFn<R>) {
   return await withExecutor(async (executor) => {
-    return await transactWithExecutor(executor, body);
+    return await transactWithExecutor(lc, executor, body);
   });
 }
 
 async function transactWithExecutor<R>(
+  lc: LogContext,
   executor: Executor,
   body: TransactionBodyFn<R>
 ) {
@@ -75,13 +80,13 @@ async function transactWithExecutor<R>(
         await executor("commit");
         return r;
       } catch (e) {
-        console.log("caught error", e, "rolling back");
+        lc.error?.("caught error", e, "rolling back");
         await executor("rollback");
         throw e;
       }
     } catch (e) {
       if (shouldRetryTransaction(e)) {
-        console.log(
+        lc.debug?.(
           `Retrying transaction due to error ${e} - attempt number ${i}`
         );
         continue;

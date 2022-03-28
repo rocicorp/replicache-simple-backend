@@ -38,6 +38,9 @@ lib
 
 
 # Supabase
+**/supabase
 **/supabase/.branches
 **/supabase/.temp
 **/supabase/.env
+
+tsconfig.tsbuildinfo

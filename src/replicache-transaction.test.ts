@@ -1,11 +1,13 @@
-import { ReplicacheTransaction } from "./replicache-transaction";
+import { ReplicacheTransaction } from "./replicache-transaction.js";
 import { expect } from "chai";
 import { test, setup } from "mocha";
-import { transact, withExecutor } from "./pg";
-import { createDatabase, getEntry } from "./data";
+import { transact, withExecutor } from "./pg.js";
+import { createDatabase, getEntry } from "./data.js";
+import { LogContext } from "@rocicorp/logger";
 
 setup(async () => {
-  await transact((executor) => createDatabase(executor));
+  const lc = new LogContext("debug");
+  await transact(lc, (executor) => createDatabase(lc, executor));
 });
 
 test("ReplicacheTransaction", async () => {

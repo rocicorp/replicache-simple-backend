@@ -1,8 +1,9 @@
-import { JSONValue } from "replicache";
+import type { LogContext } from "@rocicorp/logger";
+import type { JSONValue } from "replicache";
 import { z } from "zod";
-import { Executor } from "./pg";
+import type { Executor } from "./pg.js";
 
-export async function createDatabase(executor: Executor) {
+export async function createDatabase(lc: LogContext, executor: Executor) {
   const schemaVersion = await getSchemaVersion(executor);
   if (schemaVersion < 0 || schemaVersion > 1) {
     throw new Error("Unexpected schema version: " + schemaVersion);
@@ -10,7 +11,7 @@ export async function createDatabase(executor: Executor) {
   if (schemaVersion === 0) {
     await createSchemaVersion1(executor);
   }
-  console.log("schemaVersion is 1 - nothing to do");
+  lc.debug?.("schemaVersion is 1 - nothing to do");
 }
 
 async function getSchemaVersion(executor: Executor) {
